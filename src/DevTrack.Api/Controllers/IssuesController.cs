@@ -1,7 +1,7 @@
 using DevTrack.Application.Features.Issues.Commands.CreateIssue;
-using DevTrack.Domain.Entities; // Add this line
-using MediatR;
 using DevTrack.Application.Features.Issues.Queries.GetProjectIssues;
+using DevTrack.Domain.Entities;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -35,33 +35,41 @@ public class IssuesController : ControllerBase
         };
 
         var result = await _mediator.Send(command);
-        return CreatedAtAction(nameof(GetIssue), new { projectId, issueId = result.Id }, result);
+        // For now, just return the result without CreatedAtAction
+        return Ok(result);
     }
 
     [HttpGet]
-public async Task<ActionResult<PagedResult<IssueListDto>>> GetProjectIssues(
-    Guid projectId,
-    [FromQuery] int pageNumber = 1,
-    [FromQuery] int pageSize = 20,
-    [FromQuery] IssueStatus? status = null,
-    [FromQuery] Guid? assigneeId = null,
-    [FromQuery] string sortBy = "CreatedAt",
-    [FromQuery] bool sortDescending = true)
-{
-    var query = new GetProjectIssuesQuery
+    public async Task<ActionResult<PagedResult<IssueListDto>>> GetProjectIssues(
+        Guid projectId,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] IssueStatus? status = null,
+        [FromQuery] Guid? assigneeId = null,
+        [FromQuery] string sortBy = "CreatedAt",
+        [FromQuery] bool sortDescending = true)
     {
-        ProjectId = projectId,
-        PageNumber = pageNumber,
-        PageSize = pageSize,
-        Status = status,
-        AssigneeId = assigneeId,
-        SortBy = sortBy,
-        SortDescending = sortDescending
-    };
+        var query = new GetProjectIssuesQuery
+        {
+            ProjectId = projectId,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            Status = status,
+            AssigneeId = assigneeId,
+            SortBy = sortBy,
+            SortDescending = sortDescending
+        };
 
-    var result = await _mediator.Send(query);
-    return Ok(result);
-}
+        var result = await _mediator.Send(query);
+        return Ok(result);
+    }
+
+    [HttpGet("{issueId:guid}")]
+    public async Task<IActionResult> GetIssue(Guid projectId, Guid issueId)
+    {
+        // TODO: Implement GetIssueByIdQuery
+        return Ok(new { message = "Get issue endpoint - to be implemented" });
+    }
 }
 
 public record CreateIssueRequest(
