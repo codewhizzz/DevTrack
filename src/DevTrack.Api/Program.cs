@@ -75,6 +75,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+
+// Add HttpContextAccessor
+builder.Services.AddHttpContextAccessor();
+
 // Add application and infrastructure services
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
