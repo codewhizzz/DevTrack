@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: devtrack-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: DevTrack
+    ports:
+      - "5440:5432"  # Changed: Maps host port 5440 to container port 5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: devtrack-redis
+    ports:
+      - "6380:6379"  # Also changed Redis to avoid conflicts
+    
+volumes:
+  postgres_data:

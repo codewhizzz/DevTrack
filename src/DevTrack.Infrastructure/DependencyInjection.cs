@@ -1,4 +1,5 @@
 using DevTrack.Application.Common.Interfaces;
+using DevTrack.Infrastructure.Caching;
 using DevTrack.Infrastructure.Persistence;
 using DevTrack.Infrastructure.Persistence.Repositories;
 using DevTrack.Infrastructure.Services;
@@ -18,10 +19,24 @@ public static class DependencyInjection
         services.AddScoped<IApplicationDbContext>(provider => 
             provider.GetRequiredService<ApplicationDbContext>());
 
+        // Repositories
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
+        services.AddScoped<IProjectRepository, ProjectRepository>();
+        services.AddScoped<IIssueRepository, IssueRepository>();
+
+        // Services
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
+
+        // Add Redis caching
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = configuration.GetConnectionString("Redis");
+        });
+        
+        services.AddScoped<ICacheService, RedisCacheService>();
 
         return services;
     }
