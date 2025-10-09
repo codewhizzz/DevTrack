@@ -1,6 +1,23 @@
-version: '3.8'
-
 services:
+  devtrack-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: devtrack-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=DevTrack;Username=postgres;Password=postgres  # Use internal port 5432
+      - ConnectionStrings__Redis=redis:6379
+      - Jwt__Secret=ThisIsAVeryLongSecretKeyForDockerEnvironment!123
+      - ASPNETCORE_URLS=http://+:80
+    ports:
+      - "8081:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   postgres:
     image: postgres:15-alpine
     container_name: devtrack-postgres
@@ -9,15 +26,25 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: DevTrack
     ports:
-      - "5440:5432"  # Changed: Maps host port 5440 to container port 5432
+      - "5440:5432"  # Map host port 5440 to container port 5432
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7-alpine
     container_name: devtrack-redis
     ports:
-      - "6380:6379"  # Also changed Redis to avoid conflicts
-    
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 volumes:
   postgres_data:
